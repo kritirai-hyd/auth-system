@@ -1,0 +1,343 @@
+
+.register-container {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    width: 520px;
+  }
+
+  .register-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .register-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+.role-section{
+      display: flex
+;
+    justify-content: center;
+    align-items: center;
+    margin-top: 14rem;
+}
+  .register-container input[type="text"],
+  .register-container input[type="email"],
+  .register-container input[type="password"],
+    .register-container input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+  }
+
+  .register-container input[type="text"]:focus,
+  .register-container input[type="email"]:focus,
+  .register-container input[type="password"]:focus,
+    .register-container input[type="tel"]:focus {
+    border-color: #28a745;
+    outline: none;
+  }
+select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border 0.3s ease;
+}
+
+select:focus {
+  border-color: #007BFF;
+  outline: none;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+}
+
+  .register-container button {
+    width: 100%;
+    background: #28a745;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .register-container button:hover {
+    background: #1e7e34;
+  }
+
+  .register-container .login-link {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .register-container .login-link a {
+    color: #28a745;
+    text-decoration: none;
+  }
+
+  .register-container .login-link a:hover {
+    text-decoration: underline;
+  } body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+  
+
+ 
+  }
+
+  .login-container {
+    background: #fff;
+    border-radius: 8px;
+    width: 620px;
+    padding: 30px 40px;
+    box-shadow: 0 2px 12px #0000001a;
+    display: flex
+;
+    flex-direction: column;
+    justify-content: center;
+    /* align-items: center; */
+    margin: 9rem auto;
+
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    font-size: 2.2rem;
+  }
+
+  .login-container label {
+      margin-bottom: 8px;
+    font-weight: 600;
+    display: block;
+    font-size: 1.2rem;
+}
+
+
+  .login-container input[type="email"],
+  .login-container input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+  }
+
+  .login-container input[type="email"]:focus,
+  .login-container input[type="password"]:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  .login-container button {
+    width: 100%;
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .login-container button:hover {
+    background: #0056b3;
+  }
+
+  .login-container .register-link {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .login-container .register-link a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  .login-container .register-link a:hover {
+    text-decoration: underline;
+  }
+    .profile-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      width: 360px;
+      text-align: center;
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 20px;
+      border: 3px solid #007bff;
+    }
+
+    .profile-name {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .profile-email {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .profile-bio {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .edit-btn {
+      background: #007bff;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .edit-btn:hover {
+      background: #0056b3;
+    }
+ 
+    .cantainer{
+display: flex;
+ 
+    gap: 3rem;
+    }
+    .role-card{
+    text-align: center;
+    background-color: #f6f6f6;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    width: 300px;
+    padding: 2rem
+32px
+;
+    display: flex;
+
+    border-radius: 8px;
+
+    }
+.role-img{
+  width: 400px;
+    height: 200px;
+    object-fit: contain;
+}
+.link{
+  font-size: 1.2rem;
+  font-weight: 500;
+ 
+}
+.register-container {
+    background: #f7f7f7;
+    border-radius: 8px;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    box-shadow: 0 0 10px #0000001a;
+    flex-direction: column;
+    justify-content: center;
+    /* align-items: center; */
+    margin: 9rem auto;
+    display: flex
+;
+}
+
+.register-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+form button {
+color: #fff;
+    cursor: pointer;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    gap: 2rem;
+
+    margin-top: 10px;
+}
+.btn-cancel{
+    background-color: #DC3545;
+}
+.btn-submit{
+     background-color: #0bc900;
+}
+
+form button:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.error-message {
+  color: red;
+  font-weight: 500;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+}
