@@ -1,10 +1,10 @@
+export const runtime = "nodejs";
 import mongoose from "mongoose";
 import { connectMongoDB } from "../../../../lib/mongodb";
 import Order from "../../../../models/order";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
-
+import { authOptions } from "../../../../lib/authOptions";
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Helper: Check if user role is allowed to perform an action
