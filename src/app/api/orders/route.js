@@ -1,25 +1,23 @@
-export const runtime = "nodejs";
 import mongoose from "mongoose";
 import { connectMongoDB } from "../../../../lib/mongodb";
 import Order from "../../../../models/order";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../../../lib/authOptions";
+import { authOptions } from "../../../app/api/auth/[...nextauth]/route";
+
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// Helper: Check if user role is allowed to perform an action
 function checkRole(session, allowedRoles) {
   if (!session) return false;
   const role = session.user.role?.toLowerCase();
   return allowedRoles.includes(role);
 }
 
-// GET /orders - fetch orders based on role
+// GET /orders
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) 
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     await connectMongoDB();
 
@@ -32,16 +30,10 @@ export async function GET(req) {
     const username = session.user.name?.trim();
     const query = {};
 
-    // Role-based order filtering
-    if (role === "manager") {
-      query.status = "pending";
-    } else if (role === "accountant") {
-      query.status = "approved";
-    } else if (role === "user") {
-      query.username = username;
-    } else {
-      return NextResponse.json({ message: "Invalid role" }, { status: 403 });
-    }
+    if (role === "manager") query.status = "pending";
+    else if (role === "accountant") query.status = "approved";
+    else if (role === "user") query.username = username;
+    else return NextResponse.json({ message: "Invalid role" }, { status: 403 });
 
     const [orders, total] = await Promise.all([
       Order.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
@@ -58,17 +50,12 @@ export async function GET(req) {
   }
 }
 
-// POST /orders - create order (only user role allowed)
+// POST /orders - create order (only user)
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) 
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-
-    // Only users can create orders
-    if (!checkRole(session, ["user"])) {
-      return NextResponse.json({ message: "Forbidden: insufficient permissions" }, { status: 403 });
-    }
+    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!checkRole(session, ["user"])) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
     await connectMongoDB();
 
@@ -81,38 +68,31 @@ export async function POST(req) {
     return NextResponse.json({ order: newOrder }, { status: 201 });
   } catch (err) {
     console.error("POST error:", err);
-    return NextResponse.json({ message: err.message || "Creation failed" }, { status: 500 });
+    return NextResponse.json({ message: "Creation failed" }, { status: 500 });
   }
 }
 
-// PUT /orders?id=... - update order (user can update own orders, manager/accountant forbidden here)
+// PUT /orders?id=... - update order (only user, own orders)
 export async function PUT(req) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) 
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     await connectMongoDB();
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    if (!isValidObjectId(id)) 
-      return NextResponse.json({ message: "Invalid id" }, { status: 400 });
+    if (!isValidObjectId(id)) return NextResponse.json({ message: "Invalid id" }, { status: 400 });
 
-    // Only users can update their own orders (for example)
-    const role = session.user.role?.toLowerCase();
-    if (role !== "user") {
+    if (session.user.role?.toLowerCase() !== "user") {
       return NextResponse.json({ message: "Forbidden: only users can update orders" }, { status: 403 });
     }
 
     const updates = await req.json();
-
-    // Optional: prevent user from updating status or approved fields
     delete updates.status;
     delete updates.approved_by;
     delete updates.approved_at;
 
-    // Verify ownership: update only if username matches session user
     const order = await Order.findById(id);
     if (!order) return NextResponse.json({ message: "Not found" }, { status: 404 });
     if (order.username !== session.user.name?.trim()) {
@@ -123,26 +103,23 @@ export async function PUT(req) {
     return NextResponse.json({ order: updated });
   } catch (err) {
     console.error("PUT error:", err);
-    return NextResponse.json({ message: err.message || "Update failed" }, { status: 500 });
+    return NextResponse.json({ message: "Update failed" }, { status: 500 });
   }
 }
 
-// PATCH /orders?id=... - update status (only manager can approve/reject)
+// PATCH /orders?id=... - update status (only manager)
 export async function PATCH(req) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) 
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     await connectMongoDB();
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    if (!isValidObjectId(id)) 
-      return NextResponse.json({ message: "Invalid id" }, { status: 400 });
+    if (!isValidObjectId(id)) return NextResponse.json({ message: "Invalid id" }, { status: 400 });
 
-    const role = session.user.role?.toLowerCase();
-    if (role !== "manager") {
+    if (session.user.role?.toLowerCase() !== "manager") {
       return NextResponse.json({ message: "Forbidden: only managers can update order status" }, { status: 403 });
     }
 
@@ -156,37 +133,32 @@ export async function PATCH(req) {
       { status: newStatus, approved_by: session.user.id, approved_at: new Date() },
       { new: true }
     );
+
     if (!updated) return NextResponse.json({ message: "Not found" }, { status: 404 });
 
     return NextResponse.json({ order: updated });
   } catch (err) {
     console.error("PATCH error:", err);
-    return NextResponse.json({ message: err.message || "Status update failed" }, { status: 500 });
+    return NextResponse.json({ message: "Status update failed" }, { status: 500 });
   }
 }
 
-// DELETE /orders?id=... - delete order (user can delete own orders, manager forbidden)
+// DELETE /orders?id=... - delete order (only user, own orders)
 export async function DELETE(req) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) 
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     await connectMongoDB();
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    if (!isValidObjectId(id)) 
-      return NextResponse.json({ message: "Invalid id" }, { status: 400 });
+    if (!isValidObjectId(id)) return NextResponse.json({ message: "Invalid id" }, { status: 400 });
 
-    const role = session.user.role?.toLowerCase();
-
-    // Only user can delete own orders (managers should not delete)
-    if (role !== "user") {
+    if (session.user.role?.toLowerCase() !== "user") {
       return NextResponse.json({ message: "Forbidden: only users can delete orders" }, { status: 403 });
     }
 
-    // Verify ownership before deleting
     const order = await Order.findById(id);
     if (!order) return NextResponse.json({ message: "Not found" }, { status: 404 });
     if (order.username !== session.user.name?.trim()) {
@@ -197,6 +169,6 @@ export async function DELETE(req) {
     return NextResponse.json({ message: "Deleted" });
   } catch (err) {
     console.error("DELETE error:", err);
-    return NextResponse.json({ message: err.message || "Delete failed" }, { status: 500 });
+    return NextResponse.json({ message: "Delete failed" }, { status: 500 });
   }
 }

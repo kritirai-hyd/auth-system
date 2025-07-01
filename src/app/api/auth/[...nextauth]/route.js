@@ -1,10 +1,11 @@
+// app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import validator from "validator";
 import { connectMongoDB } from "../../../../../lib/mongodb";
 import User from "../../../../../models/user";
-import validator from "validator";
-import { authOptions } from "../../../../../lib/authOptions";
+
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -12,45 +13,39 @@ export const authOptions = {
       credentials: {
         email: { label: "Email", type: "text", placeholder: "user@example.com" },
         password: { label: "Password", type: "password" },
-        role: { label: "Role", type: "text", placeholder: "manager or user" },
+        // Removed 'role' from credentials to prevent spoofing
       },
       async authorize(credentials) {
-        const { email, password, role } = credentials ?? {};
+        const { email, password } = credentials ?? {};
 
-        if (!email || !password || !role) {
-          throw new Error("All fields are required.");
+        if (!email || !password) {
+          throw new Error("Email and password are required.");
         }
 
-        // Sanitize and validate input
         const normalizedEmail = email.trim().toLowerCase();
-        const normalizedRole = role.trim().toLowerCase();
 
         if (!validator.isEmail(normalizedEmail)) {
           throw new Error("Invalid email format.");
         }
 
+        // Connect to MongoDB
         await connectMongoDB();
 
-        // Find user by email, include password and role explicitly (select +password +role)
-        const user = await User.findOne({ email: normalizedEmail }).select("+password +role");
+        // Find user by email, explicitly include password and role fields
+        const user = await User.findOne({ email: normalizedEmail }).select("+password +role +name");
 
         if (!user) {
-          // Avoid revealing whether email or password is wrong
-          throw new Error("Invalid credentials.");
+          throw new Error("Invalid email or password.");
         }
 
-        // Validate password
+        // Check password validity
         const isPasswordValid = await bcrypt.compare(password, user.password);
+
         if (!isPasswordValid) {
-          throw new Error("Invalid credentials.");
+          throw new Error("Invalid email or password.");
         }
 
-        // Role check (case-insensitive)
-        if (user.role.toLowerCase() !== normalizedRole) {
-          throw new Error("Invalid credentials.");
-        }
-
-        // Return safe user object without password
+        // Return user data (without password)
         return {
           id: user._id.toString(),
           name: user.name,
@@ -68,6 +63,7 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
+      // On first sign in, persist user id and role in token
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -84,22 +80,24 @@ export const authOptions = {
     },
 
     async redirect({ url, baseUrl }) {
-      // Redirect to dashboard after signin or login page
-      if (url === "/api/auth/signin" || url === "/login") {
+      // Redirect /login and sign-in api to dashboard after sign-in
+      if (url === "/login" || url === "/api/auth/signin") {
         return `${baseUrl}/dashboard`;
       }
-      // Prevent open redirects outside your domain
+      // Prevent open redirects by ensuring url is relative or same origin
       return url.startsWith(baseUrl) ? url : baseUrl;
     },
   },
 
   pages: {
     signIn: "/login",
-    error: "/login", // Redirects to login page with error param
+    error: "/login", // Redirect to login page on error
   },
 
+  // Make sure NEXTAUTH_SECRET is set in your environment variables for JWT encryption
   secret: process.env.NEXTAUTH_SECRET,
 };
 
+// Export handlers for Next.js route handlers (GET and POST)
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
